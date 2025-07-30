@@ -1,0 +1,29 @@
+calibration:
+  pattern_size: [10, 19] #  10 列19 行
+  square_size: 100 # 圆点之间的间距（mm）
+  left_single_image: "calibration/photos/20250319/leftSingleImage/*.png"
+  righe_single_image: "calibration/photos/20250319/rightSingleImage/*.png"
+  left_image: "calibration/photos/20250319/leftImage/*.png"
+  right_image: "calibration/photos/20250319/rightImage/*.png"
+  show_image: false
+  single_mode: 3 #1为k1、k2、p1、p2、k3; 2 为k1、k2、p1、p2 ;3为k1、k2;4为k1、k2、k3，5为多标志
+  stereo_mode: 1 #1为优化旋转、平移; 2为提供初始外参;3不固定内参
+  fix_translation: [-20, -420, 0]
+
+output:
+  save_results: true
+  result_file: "calibration/result"
+# cv2.CALIB_USE_INTRINSIC_GUESS	使用输入的初始值作为优化起点
+# cv2.CALIB_FIX_PRINCIPAL_POINT	固定主点位置（cx, cy）
+# cv2.CALIB_FIX_ASPECT_RATIO	固定焦距比（fx/fy）
+# cv2.CALIB_ZERO_TANGENT_DIST	强制切向畸变系数（p1, p2）为零
+# cv2.CALIB_FIX_FOCAL_LENGTH	固定焦距（fx, fy）
+# cv2.CALIB_FIX_K1, ..., cv2.CALIB_FIX_K6	固定特定的径向畸变系数（k1, ..., k6）
+# cv2.CALIB_RATIONAL_MODEL	启用理性畸变模型（包含 k4, k5, k6）
+# cv2.CALIB_THIN_PRISM_MODEL	启用薄棱镜畸变模型（包含 s1, s2, s3, s4）
+# cv2.CALIB_TILTED_MODEL	启用倾斜传感器模型（包含 tauX, tauY）
+# cv2.CALIB_FIX_INTRINSIC	固定内参矩阵和畸变系数，仅优化外参
+# cv2.CALIB_SAME_FOCAL_LENGTH	假设双目相机的两个镜头具有相同的焦距
+# cv2.CALIB_USE_LU	使用 LU 分解方法进行矩阵分解
+# cv2.CALIB_USE_QR	使用 QR 分解方法进行矩阵分解
+

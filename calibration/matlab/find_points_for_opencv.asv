@@ -1,0 +1,148 @@
+clc;
+clear;
+close all;
+
+% 参数设置
+rows = 10; % 圆点行数 (例如 4 行)
+cols = 19; % 圆点列数 (例如 11 列)
+spacing = 100; % 圆点间距 (单位：毫米)
+
+% 创建非对称圆网格的世界坐标
+worldPoints = generateCircleGridPoints([rows, cols], spacing);
+
+date = '20250417';
+
+
+% 加载左右相机图像路径
+leftSingleImageDir = fullfile('/home/erge/python/Aceii/calibration/photos', date, 'leftSingleImage'); % 替换为左相机图像文件夹路径
+rightSingleImageDir = fullfile('/home/erge/python/Aceii/calibration/photos', date, '/rightSingleImage'); % 替换为右相机图像文件夹路径
+
+leftStereoImageDir = fullfile('/home/erge/python/Aceii/calibration/photos', date,'/leftImage');
+rightStereoImageDir = fullfile('/home/erge/python/Aceii/calibration/photos', date,'/rightImage');
+
+
+%% 单目
+leftImageFiles = dir(fullfile(leftSingleImageDir, '*.png')); 
+rightImageFiles = dir(fullfile(rightSingleImageDir, '*.png'));
+
+leftImagePaths = {leftImageFiles.name};
+rightImagePaths = {rightImageFiles.name};
+
+% 初始化存储检测到的图像点
+leftSingleImagePoints = [];
+rightSingleImagePoints = [];
+
+
+
+
+
+for i = 1:length(leftImagePaths)
+    imgPath = fullfile(leftSingleImageDir, leftImagePaths{i});
+    I = imread(imgPath);
+    
+    % 检测圆网格
+    detectedPoints = detectCircleGridPoints(I, [rows, cols]);
+    
+    if ~isempty(detectedPoints) % 检查是否成功检测到圆网格
+        fprintf('成功检测到圆网格：%s\n', leftImagePaths{i});
+         leftSingleImagePoints= cat(3, leftSingleImagePoints, detectedPoints); % 将检测到的点添加到 imagePoints
+        
+    else
+        fprintf('未能检测到圆网格：%s\n', leftImagePaths{i});
+    end
+end
+
+
+for i = 1:length(rightImagePaths)
+    imgPath = fullfile(rightSingleImageDir, rightImagePaths{i});
+    I = imread(imgPath);
+    
+    % 检测圆网格
+    detectedPoints = detectCircleGridPoints(I, [rows, cols]);
+    
+    if ~isempty(detectedPoints) % 检查是否成功检测到圆网格
+        fprintf('成功检测到圆网格：%s\n', rightImagePaths{i});
+         rightSingleImagePoints= cat(3, rightSingleImagePoints, detectedPoints); % 将检测到的点添加到 imagePoints
+    else
+        fprintf('未能检测到圆网格：%s\n', rightImagePaths{i});
+    end
+end
+
+
+%% 立体标定
+left_stereo_file = dir(fullfile(leftStereoImageDir, '*.png')); 
+right_stereo_file = dir(fullfile(rightStereoImageDir, '*.png'));
+
+% 提取左文件名
+file_names = {left_stereo_file.name};
+
+% 提取文件名中的数字部分
+numbers = zeros(length(file_names), 1);
+for i = 1:length(file_names)
+    % 假设文件名格式为 "prefix<number>.png"，提取数字部分
+    [~, name_without_ext] = fileparts(file_names{i});
+    numbers(i) = str2double(regexp(name_without_ext, '\d+', 'match', 'once'));
+end
+
+% 按数字排序
+[~, sort_idx] = sort(numbers);
+
+% 获取排序后的文件列表
+left_stereo_file = left_stereo_file(sort_idx);
+
+
+% 提取右文件名
+file_names = {right_stereo_file.name};
+
+% 提取文件名中的数字部分
+numbers = zeros(length(file_names), 1);
+for i = 1:length(file_names)
+    % 假设文件名格式为 "prefix<number>.png"，提取数字部分
+    [~, name_without_ext] = fileparts(file_names{i});
+    numbers(i) = str2double(regexp(name_without_ext, '\d+', 'match', 'once'));
+end
+
+% 按数字排序
+[~, sort_idx] = sort(numbers);
+
+% 获取排序后的文件列表
+right_stereo_file = right_stereo_file(sort_idx);
+
+left_stereo_name = {left_stereo_file.name};
+right_stereo_name = {right_stereo_file.name};
+
+
+
+% 初始化存储检测到的图像点
+rightStereoImagePoints = [];
+leftStereoImagePoints = [];
+
+% 假设 left_stereo_name 和 right_stereo_name 的长度相同
+for i = 1:length(left_stereo_name)
+    % 读取左图像并检测圆网格
+    leftImgPath = fullfile(leftStereoImageDir, left_stereo_name{i});
+    leftI = imread(leftImgPath);
+    leftDetectedPoints = detectCircleGridPoints(leftI, [rows, cols]);
+    
+    % 读取右图像并检测圆网格
+    rightImgPath = fullfile(rightStereoImageDir, right_stereo_name{i});
+    rightI = imread(rightImgPath);
+    rightDetectedPoints = detectCircleGridPoints(rightI, [rows, cols]);
+    
+    % 检查左右图像是否都成功检测到圆网格
+    if ~isempty(leftDetectedPoints) && ~isempty(rightDetectedPoints)
+        % 如果左右图像都成功检测到圆网格，则将点加入
+        fprintf('成功检测到圆网格：左图像 %s 和 右图像 %s\n', left_stereo_name{i}, right_stereo_name{i});
+        leftStereoImagePoints = cat(3, leftStereoImagePoints, leftDetectedPoints); % 将左图像检测到的点加入
+        rightStereoImagePoints = cat(3, rightStereoImagePoints, rightDetectedPoints); % 将右图像检测到的点加入
+    else
+        % 如果任意一个检测失败，则跳过，不加入任何点
+        fprintf('未能同时检测到圆网格：左图像 %s 或 右图像 %s\n', left_stereo_name{i}, right_stereo_name{i});
+    end
+end
+
+
+
+imageSize = size(I,1:2);
+save(date,"worldPoints","leftSingleImagePoints","rightSingleImagePoints", ...
+    "leftStereoImagePoints","rightStereoImagePoints","imageSize");
