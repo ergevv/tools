@@ -1,21 +1,20 @@
-clc;
+2clc;
 clear;
 close all;
 
 % 参数设置
-rows = 4; % 圆点行数 (例如 4 行)
-cols = 9; % 圆点列数 (例如 11 列)
-
-spacing = 100; % 圆点间距 (单位：毫米)
+rows = 7; % 圆点行数 (例如 4 行)
+cols = 7; % 圆点列数 (例如 11 列)
+spacing = 40; % 圆点间距 (单位：毫米)
 
 % 创建非对称圆网格的世界坐标
-worldPoints = generateCircleGridPoints([rows, cols], spacing);
+worldPoints = generateCircleGridPoints([rows, cols], spacing,PatternType="symmetric");
 
 
-imageDir = fullfile('/home/erge/work/Aceii/calibration/photos/r1');
+imageDir = fullfile('/home/erge/python/Aceii/calibration/photos/single/20250512');
 
 %% 单目
-imageFiles = dir(fullfile(imageDir, '*.*g')); 
+imageFiles = dir(fullfile(imageDir, '*.jpg')); 
 imagePaths = {imageFiles.name};
 
 
@@ -27,7 +26,7 @@ for i = 1:length(imagePaths)
     I = imread(imgPath);
     
     % 检测圆网格
-    detectedPoints = detectCircleGridPoints(I, [rows, cols]);
+    detectedPoints = detectCircleGridPoints(I, [rows, cols],PatternType="symmetric");
     
     if ~isempty(detectedPoints) % 检查是否成功检测到圆网格
         fprintf('成功检测到圆网格：%s\n', imagePaths{i});

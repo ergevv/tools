@@ -10,7 +10,7 @@ spacing = 100; % 圆点间距 (单位：毫米)
 % 创建非对称圆网格的世界坐标
 worldPoints = generateCircleGridPoints([rows, cols], spacing);
 
-date = '2025072302';
+date = '20250805';
 
 
 % 加载左右相机图像路径
@@ -158,7 +158,7 @@ leftI = imread(leftImgPath);
 
 rightImgPath = fullfile(right_stereo_path, right_stereo_name{1});
 rightI = imread(rightImgPath);
-[J1, J2] = rectifyStereoImages(leftI, rightI, stereoParams,OutputView='full');
+[J1, J2] = rectifyStereoImages(leftI, rightI, stereoParams2,OutputView='full');
 
 % 显示校正后的图像
 figure;

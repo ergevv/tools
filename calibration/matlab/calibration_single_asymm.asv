@@ -3,8 +3,8 @@ clear;
 close all;
 
 % 参数设置
-rows = 4; % 圆点行数 (例如 4 行)
-cols = 9; % 圆点列数 (例如 11 列)
+rows = 10; % 圆点行数 (例如 4 行)
+cols = 19; % 圆点列数 (例如 11 列)
 
 spacing = 100; % 圆点间距 (单位：毫米)
 
@@ -15,7 +15,7 @@ worldPoints = generateCircleGridPoints([rows, cols], spacing);
 imageDir = fullfile('/home/erge/work/Aceii/calibration/photos/r1');
 
 %% 单目
-imageFiles = dir(fullfile(imageDir, '*.*g')); 
+imageFiles = dir(fullfile(imageDir, '*.jpg')); 
 imagePaths = {imageFiles.name};
 
 

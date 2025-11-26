@@ -18,7 +18,9 @@ def click_and_crop(event, x, y, flags, param):
     elif event == cv2.EVENT_MOUSEMOVE and cropping:
         tmp_img = image.copy()
         cv2.rectangle(tmp_img, refPt[0], (x, y), (0, 255, 0), 2)
-        cv2.imshow("image", tmp_img)
+        # 调整图像大小以适应固定窗口
+        tmp_img_resized = cv2.resize(tmp_img, (1280, 960))
+        cv2.imshow("image", tmp_img_resized)
 
     # 如果鼠标左键释放，记录结束点，并将cropping设置为False
     elif event == cv2.EVENT_LBUTTONUP:
@@ -28,17 +30,23 @@ def click_and_crop(event, x, y, flags, param):
 
         # 在图像上绘制矩形框
         cv2.rectangle(image, refPt[0], refPt[1], (0, 255, 0), 2)
-        cv2.imshow("image", image)
+        # 调整图像大小以适应固定窗口
+        image_resized = cv2.resize(image, (1280, 960))
+        cv2.imshow("image", image_resized)
 
 def crop_multiple_regions(image_path, output_dir):
     global image, refPt, cropping, roi_points
     image = cv2.imread(image_path)
     clone = image.copy()
-    cv2.namedWindow("image")
+    cv2.namedWindow("image", cv2.WINDOW_NORMAL)
+    # 设置窗口大小为固定1280*960
+    cv2.resizeWindow("image", 1280, 960)
     cv2.setMouseCallback("image", click_and_crop)
 
     while True:
-        cv2.imshow("image", image)
+        # 调整图像大小以适应固定窗口
+        image_resized = cv2.resize(image, (1280, 960))
+        cv2.imshow("image", image_resized)
         key = cv2.waitKey(1) & 0xFF
 
         # 按r重置所有选择的区域
@@ -52,7 +60,20 @@ def crop_multiple_regions(image_path, output_dir):
         elif key == ord("c"):
             if len(roi_points) > 0:
                 for i, pts in enumerate(roi_points):
-                    roi = clone[pts[0][1]:pts[1][1], pts[0][0]:pts[1][0]]
+                    # 需要根据原始图像和调整后图像的比例来计算实际裁剪区域
+                    scale_x = clone.shape[1] / 1280.0
+                    scale_y = clone.shape[0] / 960.0
+                    
+                    x1 = int(pts[0][0] * scale_x)
+                    y1 = int(pts[0][1] * scale_y)
+                    x2 = int(pts[1][0] * scale_x)
+                    y2 = int(pts[1][1] * scale_y)
+                    
+                    # 确保坐标顺序正确
+                    x1, x2 = min(x1, x2), max(x1, x2)
+                    y1, y2 = min(y1, y2), max(y1, y2)
+                    
+                    roi = clone[y1:y2, x1:x2]
                     filename = os.path.splitext(os.path.basename(image_path))[0]
                     save_path = os.path.join(output_dir, f"{filename}_crop_{i}.jpg")
                     cv2.imwrite(save_path, roi)
